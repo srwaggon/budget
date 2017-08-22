@@ -9,10 +9,10 @@
     "react-scripts": "1.0.11"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "deploy": "yarn build && firebase deploy",
     "build": "react-scripts build",
-    "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject"
+    "deploy": "yarn build && firebase deploy",
+    "eject": "react-scripts eject",
+    "start": "react-scripts start",
+    "test": "react-scripts test --env=jsdom"
   }
 }
