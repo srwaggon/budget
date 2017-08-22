@@ -7,36 +7,31 @@ class ExpensePage extends Component {
     super(props);
 
     this.state = {
-      expenses: [],
       amount: '',
       description: '',
+      date: '',
+      expenses: []
     }
   }
 
-  getDefaultState = () => {
-    return
+  componentDidMount = () => {
+    database.ref('expenses/')
+      .orderByChild('date')
+      .on('child_added', data => {
+        this.addExpenseToState(data.key, data.val());
+      });
   }
 
-  componentDidMount = () => {
-    database.ref('/expenses')
-    .orderByChild('description')
-    .on('value', snapshot => {
-      snapshot.forEach(childSnapshot => {
-        const expense = {
-          key: childSnapshot.key,
-          value: childSnapshot.val()
-        };
-        const {expenses} = this.state;
-        this.setState({expenses: [...expenses, expense]});
-      });
-    });
+  addExpenseToState(key, value) {
+    this.setState({expenses: [{key, value}, ...this.state.expenses]});
   }
 
   onAddExpense = (event) => {
     event.preventDefault();
 
-    database.ref('/expenses/').push({
+    database.ref('expenses/').push({
       amount: this.state.amount,
+      date: this.state.date,
       description: this.state.description
     });
 
@@ -71,19 +66,28 @@ class ExpensePage extends Component {
       />
     );
 
+    const $dateField = (
+      <input
+        type="date"
+        placeholder={"when"}
+        value={this.state.date}
+        onChange={event => this.setState({date: event.target.value})}
+      />
+    );
+
     return (
       <form onSubmit={this.onAddExpense}>
         <input type="submit" value={"Add"}/>
         {$amountField}
         {$descriptionField}
-        <input type="date" placeholder={"when"} />
+        {$dateField}
       </form>
     );
   }
 
   expensesList = () => {
     const $expenseItems = this.state.expenses.map(({key, value}) => {
-        return (<li key={key}>(${value.amount}) {value.description}</li>);
+      return (<li key={key}>{value.date} (${value.amount}) {value.description}</li>);
     });
 
     return (
