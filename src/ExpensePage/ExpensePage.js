@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
-import style from './ExpensePage.css';
+import './ExpensePage.css';
 import {database} from './../fire';
+import exports from '../fire';
 
 class ExpensePage extends Component {
   constructor(props) {
@@ -18,7 +19,9 @@ class ExpensePage extends Component {
     database.ref('expenses/')
       .orderByChild('date')
       .on('child_added', data => {
-        this.addExpenseToState(data.key, data.val());
+        if (data.val().user === this.props.user.email) {
+          this.addExpenseToState(data.key, data.val());
+        }
       });
   }
 
@@ -32,7 +35,8 @@ class ExpensePage extends Component {
     database.ref('expenses/').push({
       amount: this.state.amount,
       date: this.state.date,
-      description: this.state.description
+      description: this.state.description,
+      user: this.props.user.email
     });
 
     this.setState({
@@ -98,6 +102,7 @@ class ExpensePage extends Component {
   }
 
   render() {
+    const {user} = this.props;
     return (
       <div>
         <h1>Win the Day</h1>
@@ -110,8 +115,18 @@ class ExpensePage extends Component {
         {this.addExpenseForm()}
         <h3>Today</h3>
         {this.expensesList()}
+        <button onClick={this.signOut}>Sign Out</button>
       </div>
     );
+  }
+
+  signOut = () => {
+    const {fire, googleProvider} = exports;
+    fire.auth().signOut().then(function() {
+      // Sign-out successful.
+    }).catch(function(error) {
+      // An error happened.
+    });
   }
 }
 

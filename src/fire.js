@@ -7,12 +7,18 @@ var config = {
   storageBucket: "budget-b47cf.appspot.com",
   messagingSenderId: "247175653155"
 };
+
 const fire = firebase.initializeApp(config);
 
 export const auth = fire.auth();
 
 export const database = fire.database();
 
-//export const googleProvider = new firebase.auth.GoogleProvider();
+const googleProvider = new firebase.auth.GoogleAuthProvider();
 
-export default fire;
+const exports = {
+  fire,
+  googleProvider
+};
+
+export default exports;
