@@ -1,4 +1,6 @@
 import React, {Component} from 'react';
+import { encode } from 'base32';
+
 import './ExpensePage.css';
 import {database} from './../fire';
 import exports from '../fire';
@@ -8,36 +10,88 @@ class ExpensePage extends Component {
     super(props);
 
     this.state = {
+      allowance: 0,
       amount: '',
       description: '',
       date: '',
-      expenses: []
+      expenses: [],
+      oldestExpenseDate: Number.MAX_VALUE,
+      newestExpenseDate: 0
     }
   }
 
   componentDidMount = () => {
+    this.subscribeToExpenseAdditions();
+    this.loadAllowance();
+  }
+
+  subscribeToExpenseAdditions = () => {
+    const userKey = this.getUserKey();
     database.ref('expenses/')
       .orderByChild('date')
       .on('child_added', data => {
-        if (data.val().user === this.props.user.email) {
-          this.addExpenseToState(data.key, data.val());
+        const expense = data.val();
+        if (expense.user === userKey) {
+          this.addExpenseToState(data.key, expense);
+        }
+
+        const expenseDate = Date.parse(expense.date) / 24 / 60 / 60 / 1000;
+
+        if (expenseDate < this.state.oldestExpenseDate) {
+          this.setState({oldestExpenseDate: expenseDate});
+        }
+
+        if (expenseDate > this.state.newestExpenseDate) {
+          this.setState({newestExpenseDate: expenseDate});
         }
       });
+  }
+
+  loadAllowance = () => {
+    const userKey = this.getUserKey();
+    database.ref('users/' + userKey + '/allowance')
+      .on('value', snapshot => {
+        this.setState({allowance: snapshot.val()});
+      });
+  }
+
+  onUpdateAllowance = (event) => {
+    this.updateAllowance(parseFloat(event.target.value || 0));
+  }
+
+  updateAllowance = (amount) => {
+    const userKey = this.getUserKey();
+    database.ref('users/' + userKey)
+      .update({allowance: amount});
+  }
+
+  getUserKey = () => {
+    return encode(this.props.user.email);
   }
 
   addExpenseToState(key, value) {
     this.setState({expenses: [{key, value}, ...this.state.expenses]});
   }
 
+  addExpense = () => {
+    const userKey = this.getUserKey();
+
+    const expenseRef = database.ref('expenses/')
+      .push({
+        amount: this.state.amount,
+        date: this.state.date,
+        description: this.state.description,
+        user: userKey
+      });
+
+    database.ref(`users/${userKey}/expenses`)
+      .update({[expenseRef.key]: true});
+  }
+
   onAddExpense = (event) => {
     event.preventDefault();
 
-    database.ref('expenses/').push({
-      amount: this.state.amount,
-      date: this.state.date,
-      description: this.state.description,
-      user: this.props.user.email
-    });
+    this.addExpense();
 
     this.setState({
       amount: '',
@@ -45,7 +99,7 @@ class ExpensePage extends Component {
     });
   }
 
-  addExpenseForm = () => {
+  getAddExpenseForm = () => {
     const $amountField = (
       <input
         type="number"
@@ -81,15 +135,15 @@ class ExpensePage extends Component {
 
     return (
       <form onSubmit={this.onAddExpense}>
-        <input type="submit" value={"Add"}/>
         {$amountField}
         {$descriptionField}
         {$dateField}
+        <input type="submit" value={"Add"}/>
       </form>
     );
   }
 
-  expensesList = () => {
+  getExpensesList = () => {
     const $expenseItems = this.state.expenses.map(({key, value}) => {
       return (<li key={key}>{value.date} (${value.amount}) {value.description}</li>);
     });
@@ -101,20 +155,28 @@ class ExpensePage extends Component {
     );
   }
 
+  getDateSpan = () => {
+    return this.state.newestExpenseDate - this.state.oldestExpenseDate;
+  }
+
   render() {
     const {user} = this.props;
     return (
       <div>
         <h1>Win the Day</h1>
         <h2>Temperature</h2>
-        Daily Allowance: $30
+        <label>
+          Allowance:
+          <input type="number" min="0" step=".01" value={this.state.allowance} onChange={this.onUpdateAllowance} />
+        </label>
+        <br />Total days: {this.getDateSpan()}
         <br />Today: $30
         <br />Impact: Even
         <br />Trending: +$7
         <h2>Expenses</h2>
-        {this.addExpenseForm()}
+        {this.getAddExpenseForm()}
         <h3>Today</h3>
-        {this.expensesList()}
+        {this.getExpensesList()}
         <button onClick={this.signOut}>Sign Out</button>
       </div>
     );

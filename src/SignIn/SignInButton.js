@@ -13,10 +13,8 @@ class SignIn extends Component {
       if (result.credential) {
         // This gives you a Google Access Token. You can use it to access the Google API.
         const token = result.credential.accessToken;
-        // ...
       }
-      const user = result.user;
-      console.log(user);
+      // const user = result.user;
     }).catch(function(error) {
       // Handle Errors here.
       const errorCode = error.code;
@@ -25,8 +23,6 @@ class SignIn extends Component {
       const email = error.email;
       // The firebase.auth.AuthCredential type that was used.
       const credential = error.credential;
-      // ...
-      console.log(error);
     });
   }
 }
