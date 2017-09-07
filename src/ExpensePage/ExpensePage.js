@@ -31,11 +31,11 @@ class ExpensePage extends Component {
       .orderByChild('date')
       .on('child_added', data => {
         const expense = data.val();
+        const expenseDate = Date.parse(expense.date) / 24 / 60 / 60 / 1000;
+
         if (expense.user === userKey) {
           this.addExpenseToState(data.key, expense);
         }
-
-        const expenseDate = Date.parse(expense.date) / 24 / 60 / 60 / 1000;
 
         if (expenseDate < this.state.oldestExpenseDate) {
           this.setState({oldestExpenseDate: expenseDate});
@@ -159,14 +159,43 @@ class ExpensePage extends Component {
     return this.state.newestExpenseDate - this.state.oldestExpenseDate;
   }
 
-  getTotalSum = () => {
-    return this.state.expenses.reduce((sum, {key, value}) => {
+  getSpendingSum = (expenseList) => {
+    return expenseList.reduce((sum, {key, value}) => {
       return sum + parseFloat(value.amount);
-    }, 0);
+     }, 0);
+  }
+
+  getTotalSum = () => {
+    return this.getSpendingSum(this.state.expenses);
+  }
+
+  getWeeklyExpenses = () => {
+    const now = new Date();
+    const lastWeek = new Date().setDate(now.getDate() - 7)
+    return this.state.expenses.filter(({key, value}) => {
+      const expenseDate = new Date(value.date)
+      return expenseDate >= lastWeek;
+    });
+  }
+
+  getWeeklySum = () => {
+    const expenseList = this.getWeeklyExpenses();
+    return this.getSpendingSum(expenseList);
+  }
+
+  getWeeklyTrend = () => {
+    const dateSpan = 7;
+    const weeklyAllowance = dateSpan * this.state.allowance;
+    const remainingAllowance = weeklyAllowance - this.getWeeklySum();
+    const weeklyTrend = remainingAllowance / dateSpan;
+    return Math.round(weeklyTrend * 100) / 100;
   }
 
   getLifelongHealth = () => {
-    return this.getDateSpan() * this.state.allowance - this.getTotalSum();
+    const dateSpan = this.getDateSpan();
+    const totalAllowance = dateSpan * this.state.allowance;
+    const remainingAllowance = totalAllowance - this.getTotalSum();
+    return remainingAllowance;
   }
 
   render() {
@@ -182,11 +211,11 @@ class ExpensePage extends Component {
         <br />Total days: {this.getDateSpan()}
         <br />Total spent: ${this.getTotalSum()}
         <br />Lifelong Health: ${this.getLifelongHealth()}
-        <br />Trending: +$7
+        <br />Weekly Trend: ${this.getWeeklyTrend()}
         <h2>Expenses</h2>
         {this.getAddExpenseForm()}
         <h3>Today</h3>
-        <br />Total: $30
+        Total: $30
         <br />Impact: Even
         {this.getExpensesList()}
         <button onClick={this.signOut}>Sign Out</button>
