@@ -159,6 +159,16 @@ class ExpensePage extends Component {
     return this.state.newestExpenseDate - this.state.oldestExpenseDate;
   }
 
+  getTotalSum = () => {
+    return this.state.expenses.reduce((sum, {key, value}) => {
+      return sum + parseFloat(value.amount);
+    }, 0);
+  }
+
+  getLifelongHealth = () => {
+    return this.getDateSpan() * this.state.allowance - this.getTotalSum();
+  }
+
   render() {
     const {user} = this.props;
     return (
@@ -170,12 +180,14 @@ class ExpensePage extends Component {
           <input type="number" min="0" step=".01" value={this.state.allowance} onChange={this.onUpdateAllowance} />
         </label>
         <br />Total days: {this.getDateSpan()}
-        <br />Today: $30
-        <br />Impact: Even
+        <br />Total spent: ${this.getTotalSum()}
+        <br />Lifelong Health: ${this.getLifelongHealth()}
         <br />Trending: +$7
         <h2>Expenses</h2>
         {this.getAddExpenseForm()}
         <h3>Today</h3>
+        <br />Total: $30
+        <br />Impact: Even
         {this.getExpensesList()}
         <button onClick={this.signOut}>Sign Out</button>
       </div>
