@@ -1,6 +1,8 @@
 import React, {Component} from 'react';
 import { encode } from 'base32';
 
+import {Actions} from 'p-flux';
+
 import './ExpensePage.css';
 import {database} from './../fire';
 import exports from '../fire';
@@ -34,7 +36,7 @@ class ExpensePage extends Component {
         const expenseDate = Date.parse(expense.date) / 24 / 60 / 60 / 1000;
 
         if (expense.user === userKey) {
-          this.addExpenseToState(data.key, expense);
+          Actions.addExpense({key: data.key, value: expense});
         }
 
         if (expenseDate < this.state.oldestExpenseDate) {
@@ -67,10 +69,6 @@ class ExpensePage extends Component {
 
   getUserKey = () => {
     return encode(this.props.user.email);
-  }
-
-  addExpenseToState(key, value) {
-    this.setState({expenses: [{key, value}, ...this.state.expenses]});
   }
 
   addExpense = () => {
@@ -144,7 +142,7 @@ class ExpensePage extends Component {
   }
 
   getExpensesList = () => {
-    const $expenseItems = this.state.expenses.map(({key, value}) => {
+    const $expenseItems = this.props.expenses.map(({key, value}) => {
       return (<li key={key}>{value.date} (${value.amount}) {value.description}</li>);
     });
 
@@ -166,13 +164,13 @@ class ExpensePage extends Component {
   }
 
   getTotalSum = () => {
-    return this.getSpendingSum(this.state.expenses);
+    return this.getSpendingSum(this.props.expenses);
   }
 
   getWeeklyExpenses = () => {
     const now = new Date();
     const lastWeek = new Date().setDate(now.getDate() - 7)
-    return this.state.expenses.filter(({key, value}) => {
+    return this.props.expenses.filter(({key, value}) => {
       const expenseDate = new Date(value.date)
       return expenseDate >= lastWeek;
     });

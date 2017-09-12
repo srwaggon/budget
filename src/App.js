@@ -1,9 +1,13 @@
 import React, { Component } from 'react';
-import exports from './fire';
+import {useStore} from 'p-flux';
 
+import exports from './fire';
 import './App.css';
+import store from './Store';
 import ExpensePage from './ExpensePage/ExpensePage';
 import SignInButton from './SignIn/SignInButton'
+
+import ExpenseDispatchHandler from './ExpensePage/ExpenseDispatchHandler';
 
 class App extends Component {
   constructor(props) {
@@ -21,7 +25,7 @@ class App extends Component {
     const {user} = this.state;
 
     const pageToDisplay = user
-    ? (<ExpensePage user={user} />)
+    ? (<ExpensePage user={user} {...this.props.store}/>)
     : (<SignInButton />);
 
     return (
@@ -42,4 +46,11 @@ class App extends Component {
   }
 }
 
-export default App;
+export default useStore(App,
+  {
+    actions: [],
+    dispatcherHandlers: [
+      ExpenseDispatchHandler
+    ],
+    store
+  });
