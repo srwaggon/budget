@@ -1,5 +1,6 @@
 const store = {
-  expenses: []
+  expenses: [],
+  oldestExpenseDate: Number.MAX_VALUE
 };
 
 export default store;

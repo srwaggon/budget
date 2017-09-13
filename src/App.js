@@ -52,5 +52,8 @@ export default useStore(App,
     dispatcherHandlers: [
       ExpenseDispatchHandler
     ],
+    onDispatch: (event) => {
+//      console.info('dispatching event', event);
+    },
     store
   });
