@@ -120,9 +120,9 @@ class ExpensePage extends Component {
 
     return (
       <form onSubmit={this.onAddExpense}>
+        {$dateField}
         {$amountField}
         {$descriptionField}
-        {$dateField}
         <input type="submit" value={"Add"}/>
       </form>
     );
@@ -130,13 +130,23 @@ class ExpensePage extends Component {
 
   getExpensesList = () => {
     const $expenseItems = this.props.expenses.map(({key, value}) => {
-      return (<li key={key}>{value.date} (${value.amount}) {value.description}</li>);
+      return (
+        <tr key={key}>
+          <td>{value.date}</td>
+          <td>${value.amount}</td>
+          <td>{value.description}</td>
+        </tr>);
     });
 
     return (
-      <ul>
+      <table className="expensesTable">
+        <tr>
+          <th>Date</th>
+          <th>Amount</th>
+          <th>Description</th>
+        </tr>
         {$expenseItems}
-      </ul>
+      </table>
     );
   }
 
@@ -206,32 +216,43 @@ class ExpensePage extends Component {
           <input type="number" min="0" step=".01" value={this.state.allowance} onChange={this.onUpdateAllowance} />
         </label>
 
-        <h2>Today's Temperature</h2>
-        <ul>
-          <li>Days: {dayLong}</li>
-          <li>Allowance: {dayLongAllowance}</li>
-          <li>Spent: ${dayLongSpent}</li>
-          <li>Health: ${remainingDayLongAllowance}</li>
-          <li>Trend: ${dayLongTrend}</li>
-        </ul>
+        <h2>Temperature</h2>
+        <table className="temperatureTable">
+          <tr>
+            <th>Period</th>
+            <td>Today</td>
+            <td>This Week</td>
+            <td>Lifetime ({Math.floor(lifetime)} days)</td>
+          </tr>
 
-        <h2>Weekly Temperature</h2>
-        <ul>
-          <li>Days: {weekLong}</li>
-          <li>Allowance: {weekLongAllowance}</li>
-          <li>Spent: ${weekLongSpent}</li>
-          <li>Health: ${remainingWeekLongAllowance}</li>
-          <li>Trend: ${weekLongTrend}</li>
-        </ul>
+          <tr>
+            <th>Allowance</th>
+            <td>${dayLongAllowance}</td>
+            <td>${weekLongAllowance}</td>
+            <td>${lifetimeAllowance}</td>
+          </tr>
 
-        <h2>Lifetime Temperature</h2>
-        <ul>
-          <li>Days: {Math.floor(lifetime)}</li>
-          <li>Allowance: {lifetimeAllowance}</li>
-          <li>Spent: ${lifetimeSpent}</li>
-          <li>Health: ${remaininglifetimeAllowance}</li>
-          <li>Trend: ${lifetimeTrend}</li>
-        </ul>
+          <tr>
+            <th>Spent</th>
+            <td>${dayLongSpent}</td>
+            <td>${weekLongSpent}</td>
+            <td>${lifetimeSpent}</td>
+          </tr>
+
+          <tr>
+            <th>Health</th>
+            <td>${remainingDayLongAllowance}</td>
+            <td>${remainingWeekLongAllowance}</td>
+            <td>${remaininglifetimeAllowance}</td>
+          </tr>
+
+          <tr>
+            <th>Trend</th>
+            <td>${dayLongTrend}</td>
+            <td>${weekLongTrend}</td>
+            <td>${lifetimeTrend}</td>
+          </tr>
+        </table>
 
         <h2>Expenses</h2>
         {this.getAddExpenseForm()}

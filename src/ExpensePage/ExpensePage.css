@@ -1,3 +1,7 @@
+body {
+  color: #455;
+}
+
 h3 {
   margin: 18px 0 5px 0;
 }
@@ -6,4 +10,21 @@ ul {
   margin: 0;
   list-style: none;
   padding: 0;
+}
+
+table {
+  border: solid thin black;
+  padding: 7px;
+}
+
+th {
+  text-align: left;
+}
+
+.expensesTable {
+  min-width: 700px;
+}
+
+.temperatureTable {
+  min-width: 700px;
 }
